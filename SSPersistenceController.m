@@ -51,7 +51,8 @@
         NSURL *storeURL = [documentsURL URLByAppendingPathComponent:[NSString stringWithFormat:@"%@.sqlite", modelName]];
 
         NSError *error = nil;
-        NSAssert([psc addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error], @"NSPersistentStoreCoordinator not added correctly!");
+        NSPersistentStore *persistentStore = [psc addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error];
+        NSAssert(persistentStore, @"NSPersistentStoreCoordinator not added correctly!");
 
         if (![self initCallback]) {
             return;

@@ -15,7 +15,8 @@ Pod::Spec.new do |s|
     s.platform     = :ios, "8.0"
     s.ios.deployment_target = "8.0"
     s.source       = { :git => "https://github.com/ssuchanowski/SSPersistenceController.git", :tag => s.version.to_s }
-    s.source_files  = "SSPersistenceController/**/*.{h,m}"
+    # s.source_files  = "SSPersistenceController/**/*.{h,m}"
+    s.source_files  = "*.{h,m}"
     s.frameworks = 'CoreData'
     s.requires_arc = true
     s.dependency "KZAsserts"
