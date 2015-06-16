@@ -1,12 +1,10 @@
 
-#  Be sure to run `pod spec lint SSPersistenceController.podspec' to ensure this is a
-
 Pod::Spec.new do |s|
     s.name         = "SSPersistenceController"
     s.version      = "0.0.1"
-    s.summary      = "Core Data boiler plate code"
+    s.summary      = "Core Data boilerplate code with multithread approach"
     s.description  = <<-DESC
-                   Core Data boiler plate code - todo
+                   Core Data boilerplate code with multithread approach (having private queue to handle all data writting). Thanks to that we won't block UI even during massive import.
                    DESC
     s.homepage     = "https://github.com/ssuchanowski/SSPersistenceController"
     s.license      = { :type => "MIT", :file => "LICENSE" }
