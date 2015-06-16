@@ -1,3 +1,5 @@
+//  Created by Sebastian Suchanowski (@ssuchanowski, www.synappse.co)
+
 @import Foundation;
 @import CoreData;
 
@@ -9,7 +11,7 @@ typedef void(^DBSaveCompletionBlock)(BOOL suceeded, NSError *error);
 @property (strong, readonly) NSManagedObjectContext *managedObjectContext;
 
 - (instancetype)initWithModelName:(NSString *)modelName callback:(InitCallbackBlock)callback;
-- (NSManagedObjectContext *)newChildPrivateManagedObjectContext;
+- (NSManagedObjectContext *)newPrivateChildManagedObjectContext;
 - (void)save:(DBSaveCompletionBlock)callback;
 
 @end

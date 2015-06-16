@@ -1,3 +1,5 @@
+//  Created by Sebastian Suchanowski (@ssuchanowski, www.synappse.co)
+
 #import "SSPersistenceController.h"
 
 @interface SSPersistenceController ()
@@ -61,7 +63,7 @@
     });
 }
 
-- (NSManagedObjectContext *)newChildPrivateManagedObjectContext {
+- (NSManagedObjectContext *)newPrivateChildManagedObjectContext {
     NSManagedObjectContext *bgManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
     bgManagedObjectContext.parentContext = self.managedObjectContext;
     return bgManagedObjectContext;
