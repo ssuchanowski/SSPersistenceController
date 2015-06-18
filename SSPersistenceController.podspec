@@ -1,10 +1,9 @@
-
 Pod::Spec.new do |s|
     s.name         = "SSPersistenceController"
     s.version      = "0.0.1"
-    s.summary      = "Core Data boilerplate code with multithread approach"
+    s.summary      = "Core Data boilerplate code with multithread approach inspired by Marcus Zarra CoreData Stack (http://martiancraft.com/blog/2015/03/core-data-stack/) and many more it's interpretations."
     s.description  = <<-DESC
-                   Core Data boilerplate code with multithread approach (having private queue to handle all data writting). Thanks to that we won't block UI even during massive import.
+                   Core Data boilerplate code with multithread approach inspired by Marcus Zarra CoreData Stack (http://martiancraft.com/blog/2015/03/core-data-stack/) and many more it's interpretations. With very minimal effort we won't block UI even during massive import.
                    DESC
     s.homepage     = "https://github.com/ssuchanowski/SSPersistenceController"
     s.license      = { :type => "MIT", :file => "LICENSE" }
