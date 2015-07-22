@@ -8,12 +8,23 @@
 
 #pragma mark - Fetching
 
-- (NSArray *)fetchAllEntities:(Class)entityClass
-                withPredicate:(NSPredicate *)predicate
-                  withSorting:(NSArray *)sortDescriptors
-                   fetchLimit:(NSUInteger)limit
-            prefetchRelations:(NSArray *)prefetchRelations
-              fetchProperties:(NSArray *)properties {
+- (NSArray *)fetchAllEntities:(Class)entityClass withPredicate:(NSPredicate *)predicate {
+    return [self fetchAllEntities:entityClass withPredicate:predicate withSorting:nil fetchLimit:0 prefetchRelations:nil fetchProperties:nil];
+}
+
+- (NSArray *)fetchAllEntities:(Class)entityClass withPredicate:(NSPredicate *)predicate withSorting:(NSArray *)sortDescriptors {
+    return [self fetchAllEntities:entityClass withPredicate:predicate withSorting:sortDescriptors fetchLimit:0 prefetchRelations:nil fetchProperties:nil];
+}
+
+- (NSArray *)fetchAllEntities:(Class)entityClass withPredicate:(NSPredicate *)predicate withSorting:(NSArray *)sortDescriptors fetchLimit:(NSUInteger)limit {
+    return [self fetchAllEntities:entityClass withPredicate:predicate withSorting:sortDescriptors fetchLimit:limit prefetchRelations:nil fetchProperties:nil];
+}
+
+- (NSArray *)fetchAllEntities:(Class)entityClass withPredicate:(NSPredicate *)predicate withSorting:(NSArray *)sortDescriptors fetchLimit:(NSUInteger)limit prefetchRelations:(NSArray *)prefetchRelations {
+    return [self fetchAllEntities:entityClass withPredicate:predicate withSorting:sortDescriptors fetchLimit:limit prefetchRelations:prefetchRelations fetchProperties:nil];
+}
+
+- (NSArray *)fetchAllEntities:(Class)entityClass withPredicate:(NSPredicate *)predicate withSorting:(NSArray *)sortDescriptors fetchLimit:(NSUInteger)limit prefetchRelations:(NSArray *)prefetchRelations fetchProperties:(NSArray *)properties {
 
     AssertTrueOrReturnNil([entityClass isSubclassOfClass:[NSManagedObject class]]);
 
@@ -37,10 +48,19 @@
     return fetched;
 }
 
-- (NSManagedObject *)fetchEntity:(Class)entityClass
-                   withPredicate:(NSPredicate *)predicate
-                     withSorting:(NSArray *)sortDescriptors
-               prefetchRelations:(NSArray *)prefetchRelations {
+- (NSManagedObject *)fetchEntity:(Class)entityClass withPredicate:(NSPredicate *)predicate {
+    return [self fetchEntity:entityClass withPredicate:predicate withSorting:nil prefetchRelations:nil fetchProperties:nil];
+}
+
+- (NSManagedObject *)fetchEntity:(Class)entityClass withPredicate:(NSPredicate *)predicate withSorting:(NSArray *)sortDescriptors {
+    return [self fetchEntity:entityClass withPredicate:predicate withSorting:sortDescriptors prefetchRelations:nil fetchProperties:nil];
+}
+
+- (NSManagedObject *)fetchEntity:(Class)entityClass withPredicate:(NSPredicate *)predicate withSorting:(NSArray *)sortDescriptors prefetchRelations:(NSArray *)prefetchRelations {
+    return [self fetchEntity:entityClass withPredicate:predicate withSorting:sortDescriptors prefetchRelations:prefetchRelations fetchProperties:nil];
+}
+
+- (NSManagedObject *)fetchEntity:(Class)entityClass withPredicate:(NSPredicate *)predicate withSorting:(NSArray *)sortDescriptors prefetchRelations:(NSArray *)prefetchRelations fetchProperties:(NSArray *)properties {
 
     AssertTrueOrReturnNil([entityClass isSubclassOfClass:[NSManagedObject class]]);
 
@@ -66,6 +86,7 @@
 }
 
 - (NSInteger)countAllEntities:(Class)entityClass withPredicate:(NSPredicate *)predicate {
+
     AssertTrueOr([entityClass isSubclassOfClass:[NSManagedObject class]], return -1;);
 
     NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:[entityClass entityClassName]];
@@ -83,6 +104,7 @@
 #pragma mark - Inserting
 
 - (NSManagedObject *)insertNewObject:(Class)entityClass {
+
     AssertTrueOrReturnNil([entityClass isSubclassOfClass:[NSManagedObject class]]);
 
     return [NSEntityDescription insertNewObjectForEntityForName:[entityClass entityClassName] inManagedObjectContext:self];
