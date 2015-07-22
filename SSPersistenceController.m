@@ -119,7 +119,7 @@
             [self.managedObjectContext.persistentStoreCoordinator removePersistentStore:store error:&error];
             [[NSFileManager defaultManager] removeItemAtPath:store.URL.path error:&error];
             self.managedObjectContext = nil;
-            self = [[SSPersistenceController alloc] initWithModelName:self.modelName callback:self.initCallback];
+            [self initWithModelName:self.modelName callback:self.initCallback];
             if (callback) callback(error == nil, error);
         }
     }];
