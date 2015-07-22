@@ -10,10 +10,11 @@
 
 - (NSArray *)fetchAllEntities:(Class)entityClass
                 withPredicate:(NSPredicate *)predicate
-                  withSorting:(NSSortDescriptor *)sort
+                  withSorting:(NSArray *)sortDescriptors
                    fetchLimit:(NSUInteger)limit
             prefetchRelations:(NSArray *)prefetchRelations
               fetchProperties:(NSArray *)properties {
+
     AssertTrueOrReturnNil([entityClass isSubclassOfClass:[NSManagedObject class]]);
 
     NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:[entityClass entityClassName]];
@@ -25,8 +26,8 @@
         [fetchRequest setRelationshipKeyPathsForPrefetching:prefetchRelations];
     }
 
-    if (sort) {
-        fetchRequest.sortDescriptors = @[sort];
+    if (sortDescriptors) {
+        fetchRequest.sortDescriptors = sortDescriptors;
     }
 
     NSError *error = nil;
@@ -39,15 +40,24 @@
     return fetched;
 }
 
-- (NSManagedObject *)fetchEntity:(Class)entityClass withPredicate:(NSPredicate *)predicate prefetchRelations:(NSArray *)prefetchRelations {
+- (NSManagedObject *)fetchEntity:(Class)entityClass
+                   withPredicate:(NSPredicate *)predicate
+                     withSorting:(NSArray *)sortDescriptors
+               prefetchRelations:(NSArray *)prefetchRelations {
+
     AssertTrueOrReturnNil([entityClass isSubclassOfClass:[NSManagedObject class]]);
 
     NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:[entityClass entityClassName]];
     fetchRequest.includesPendingChanges = YES;
     fetchRequest.predicate = predicate;
     fetchRequest.fetchLimit = 1;
+
     if (prefetchRelations) {
         [fetchRequest setRelationshipKeyPathsForPrefetching:prefetchRelations];
+    }
+
+    if (sort) {
+        fetchRequest.sortDescriptors = sortDescriptors;
     }
 
     NSError *error = nil;
