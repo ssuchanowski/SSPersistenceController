@@ -73,7 +73,7 @@
     return bgManagedObjectContext;
 }
 
-- (void)save:(DBSaveCompletionBlock)callback {
+- (void)save:(DBBooleanCompletionBlock)callback {
 
     if (![NSThread isMainThread]) {
         dispatch_sync(dispatch_get_main_queue(), ^{
@@ -120,9 +120,7 @@
             [[NSFileManager defaultManager] removeItemAtPath:store.URL.path error:&error];
             self.managedObjectContext = nil;
             self = [[SSPersistenceController alloc] initWithModelName:self.modelName callback:self.initCallback];
-            if (callback) {
-                callback(error == nil, error);
-            }
+            if (callback) callback(error == nil, error);
         }
     }];
 }

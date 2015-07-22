@@ -4,7 +4,7 @@
 @import CoreData;
 
 typedef void (^InitCallbackBlock)(void);
-typedef void(^DBSaveCompletionBlock)(BOOL suceeded, NSError *error);
+typedef void(^DBBooleanCompletionBlock)(BOOL suceeded, NSError *error);
 
 @interface SSPersistenceController : NSObject
 
