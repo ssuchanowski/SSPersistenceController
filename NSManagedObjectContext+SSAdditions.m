@@ -22,12 +22,9 @@
     fetchRequest.fetchLimit = limit;
     fetchRequest.propertiesToFetch = properties;
     fetchRequest.includesPendingChanges = YES;
+    fetchRequest.sortDescriptors = sortDescriptors;
     if (prefetchRelations) {
         [fetchRequest setRelationshipKeyPathsForPrefetching:prefetchRelations];
-    }
-
-    if (sortDescriptors) {
-        fetchRequest.sortDescriptors = sortDescriptors;
     }
 
     NSError *error = nil;
@@ -51,13 +48,10 @@
     fetchRequest.includesPendingChanges = YES;
     fetchRequest.predicate = predicate;
     fetchRequest.fetchLimit = 1;
+    fetchRequest.sortDescriptors = sortDescriptors;
 
     if (prefetchRelations) {
         [fetchRequest setRelationshipKeyPathsForPrefetching:prefetchRelations];
-    }
-
-    if (sort) {
-        fetchRequest.sortDescriptors = sortDescriptors;
     }
 
     NSError *error = nil;
