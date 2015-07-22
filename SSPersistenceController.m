@@ -107,4 +107,21 @@
     }];
 }
 
+- (void)cleanDatabase:(DBBooleanCompletionBlock)callback {
+    [self.managedObjectContext performBlockAndWait:^{
+        [self.managedObjectContext reset];
+        NSArray *stores = [self.managedObjectContext.persistentStoreCoordinator persistentStores];
+        for (NSPersistentStore *store in stores) {
+            NSError *error = nil;
+            [self.managedObjectContext.persistentStoreCoordinator removePersistentStore:store error:&error];
+            [[NSFileManager defaultManager] removeItemAtPath:store.URL.path error:&error];
+            if (callback) {
+                self.managedObjectContext = nil;
+                callback(error == nil, error);
+                // TODO: create it after
+            }
+        }
+    }];
+}
+
 @end

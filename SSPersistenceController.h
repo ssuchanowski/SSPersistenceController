@@ -12,6 +12,15 @@ typedef void(^DBSaveCompletionBlock)(BOOL suceeded, NSError *error);
 
 - (instancetype)initWithModelName:(NSString *)modelName callback:(InitCallbackBlock)callback;
 - (NSManagedObjectContext *)newPrivateChildManagedObjectContext;
-- (void)save:(DBSaveCompletionBlock)callback;
+
+/*
+ * Perform save on main context and forward data for private context to do the operation
+ */
+- (void)save:(DBBooleanCompletionBlock)callback;
+
+/*
+ * Removes Persistent Store Coordinator
+ */
+- (void)cleanDatabase:(DBBooleanCompletionBlock)callback;
 
 @end
