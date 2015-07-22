@@ -6,6 +6,7 @@
 
 @property (strong, readwrite) NSManagedObjectContext *managedObjectContext;
 @property (strong) NSManagedObjectContext *privateContext;
+@property (strong) NSString *modelName;
 
 @property (copy) InitCallbackBlock initCallback;
 
@@ -26,6 +27,8 @@
     if (self.managedObjectContext) {
         return;
     }
+
+    self.modelName = modelName;
 
     NSURL *modelURL = [[NSBundle mainBundle] URLForResource:modelName withExtension:@"momd"];
     NSManagedObjectModel *mom = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
@@ -115,10 +118,10 @@
             NSError *error = nil;
             [self.managedObjectContext.persistentStoreCoordinator removePersistentStore:store error:&error];
             [[NSFileManager defaultManager] removeItemAtPath:store.URL.path error:&error];
+            self.managedObjectContext = nil;
+            self = [[SSPersistenceController alloc] initWithModelName:self.modelName callback:self.initCallback];
             if (callback) {
-                self.managedObjectContext = nil;
                 callback(error == nil, error);
-                // TODO: create it after
             }
         }
     }];
