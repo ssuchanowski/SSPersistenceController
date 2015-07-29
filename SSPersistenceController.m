@@ -118,11 +118,11 @@
             NSError *error = nil;
             [self.managedObjectContext.persistentStoreCoordinator removePersistentStore:store error:&error];
             [[NSFileManager defaultManager] removeItemAtPath:store.URL.path error:&error];
-            self.managedObjectContext = nil;
-            self.privateContext = nil;
-            [self initWithModelName:self.modelName callback:nil];
             if (callback) callback(error == nil, error);
         }
+        self.managedObjectContext = nil;
+        self.privateContext = nil;
+        [self initWithModelName:self.modelName callback:nil];
     }];
 }
 
