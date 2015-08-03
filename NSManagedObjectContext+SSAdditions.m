@@ -78,11 +78,9 @@
     NSArray *fetchResult = [self executeFetchRequest:fetchRequest error:&error];
     if (error) {
         NSLog(@"Error while fetching entity (%@) - %@", [entityClass entityClassName], error.localizedDescription);
-    } else if (fetchResult.count >= 1) {
-        return fetchResult[0];
     }
 
-    return nil;
+    return [fetchResult firstObject];
 }
 
 - (NSInteger)countAllEntities:(Class)entityClass withPredicate:(NSPredicate *)predicate {
