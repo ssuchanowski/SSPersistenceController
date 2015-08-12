@@ -89,6 +89,7 @@
 
     NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:[entityClass entityClassName]];
     fetchRequest.predicate = predicate;
+    fetchRequest.includesPendingChanges = YES;
 
     NSError *error = nil;
     NSUInteger result = [self countForFetchRequest:fetchRequest error:&error];
