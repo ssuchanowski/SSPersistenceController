@@ -52,12 +52,18 @@
         NSError *error = nil;
         NSPersistentStore *persistentStore = [psc addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:[self storeURL] options:options error:&error];
         if (!persistentStore) {
-            NSLog(@"NSPersistentStoreCoordinator not added correctly, resetting");
-            __weak __typeof(self) weakSelf = self;
-            [self cleanDatabase:^(BOOL suceeded, NSError *error) {
-                NSAssert1(suceeded, @"Database clean failed: %@", error.localizedDescription);
-            }];
-            return;
+            BOOL shouldFlushCDStack = NO;
+#ifdef DEBUG
+            shouldFlushCDStack = ([error.domain isEqualToString:NSCocoaErrorDomain] && error.code == NSMigrationMissingSourceModelError);
+#endif
+            NSLog(@"NSPersistentStoreCoordinator not added correctly: %@", error.localizedDescription);
+            if (shouldFlushCDStack) {
+                NSLog(@"Trying to cleanup");
+                [self cleanDatabase:^(BOOL suceeded, NSError *error) {
+                    NSAssert1(suceeded, @"Database cleanup failed: %@", error.localizedDescription);
+                }];
+                return;
+            }
         }
         
         if (![self initCallback]) {
