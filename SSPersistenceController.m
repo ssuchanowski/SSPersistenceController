@@ -29,9 +29,8 @@
     }
 
     self.modelName = modelName;
-
-    NSURL *modelURL = [[NSBundle mainBundle] URLForResource:modelName withExtension:@"momd"];
-    NSManagedObjectModel *mom = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
+    
+    NSManagedObjectModel *mom = [[NSManagedObjectModel alloc] initWithContentsOfURL:[self modelURL]];
     NSAssert(mom, @"NSManagedObjectModel not created correctly!");
 
     NSPersistentStoreCoordinator *coordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:mom];
@@ -45,14 +44,11 @@
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         NSPersistentStoreCoordinator *psc = [[self privateContext] persistentStoreCoordinator];
-        NSMutableDictionary *options = [NSMutableDictionary dictionary];
-        options[NSMigratePersistentStoresAutomaticallyOption] = @YES;
-        options[NSInferMappingModelAutomaticallyOption] = @YES;
-
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        NSURL *documentsURL = [[fileManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
-        NSURL *storeURL = [documentsURL URLByAppendingPathComponent:[NSString stringWithFormat:@"%@.sqlite", modelName]];
-
+        NSDictionary *options = @{
+                                  NSMigratePersistentStoresAutomaticallyOption : @YES,
+                                  NSInferMappingModelAutomaticallyOption : @YES,
+                                  };
+        
         NSError *error = nil;
         NSPersistentStore *persistentStore = [psc addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error];
         NSAssert(persistentStore, @"NSPersistentStoreCoordinator not added correctly!");
@@ -65,6 +61,16 @@
             [self initCallback]();
         });
     });
+}
+
+- (NSURL *)modelURL {
+    return [[NSBundle mainBundle] URLForResource:self.modelName withExtension:@"momd"];
+}
+
+- (NSURL *)storeURL {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSURL *documentsURL = [[fileManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+    return [documentsURL URLByAppendingPathComponent:[NSString stringWithFormat:@"%@.sqlite", self.modelName]];
 }
 
 - (NSManagedObjectContext *)newPrivateChildManagedObjectContext {
