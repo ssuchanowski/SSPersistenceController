@@ -50,9 +50,16 @@
                                   };
         
         NSError *error = nil;
-        NSPersistentStore *persistentStore = [psc addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error];
-        NSAssert(persistentStore, @"NSPersistentStoreCoordinator not added correctly!");
-
+        NSPersistentStore *persistentStore = [psc addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:[self storeURL] options:options error:&error];
+        if (!persistentStore) {
+            NSLog(@"NSPersistentStoreCoordinator not added correctly, resetting");
+            __weak __typeof(self) weakSelf = self;
+            [self cleanDatabase:^(BOOL suceeded, NSError *error) {
+                NSAssert1(suceeded, @"Database clean failed: %@", error.localizedDescription);
+            }];
+            return;
+        }
+        
         if (![self initCallback]) {
             return;
         }
@@ -117,18 +124,29 @@
 }
 
 - (void)cleanDatabase:(DBBooleanCompletionBlock)callback {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    [fileManager removeItemAtURL:[self storeURL] error:NULL];
+    
+    __weak __typeof(self) weakSelf = self;
     [self.managedObjectContext performBlockAndWait:^{
-        [self.managedObjectContext reset];
-        NSArray *stores = [self.managedObjectContext.persistentStoreCoordinator persistentStores];
+        __typeof__(self) strongSelf = weakSelf;
+        
+        [strongSelf.managedObjectContext reset];
+        NSArray *stores = [strongSelf.managedObjectContext.persistentStoreCoordinator persistentStores];
+        NSError *error = nil;
         for (NSPersistentStore *store in stores) {
-            NSError *error = nil;
-            [self.managedObjectContext.persistentStoreCoordinator removePersistentStore:store error:&error];
-            [[NSFileManager defaultManager] removeItemAtPath:store.URL.path error:&error];
-            if (callback) callback(error == nil, error);
+            NSError *innerError = nil;
+            [strongSelf.managedObjectContext.persistentStoreCoordinator removePersistentStore:store error:&innerError];
+            [fileManager removeItemAtPath:store.URL.path error:&innerError];
+            if (innerError) {
+                error = innerError;
+            }
         }
-        self.managedObjectContext = nil;
-        self.privateContext = nil;
-        [self initWithModelName:self.modelName callback:nil];
+        strongSelf.managedObjectContext = nil;
+        strongSelf.privateContext = nil;
+        [strongSelf initWithModelName:strongSelf.modelName callback:^{
+            if (callback) callback(error == nil, error);
+        }];
     }];
 }
 
