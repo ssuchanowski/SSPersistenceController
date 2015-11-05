@@ -4,6 +4,7 @@
 
 @interface SSPersistenceController ()
 
+@property (strong, nonatomic) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 @property (strong, readwrite) NSManagedObjectContext *managedObjectContext;
 @property (strong) NSManagedObjectContext *privateContext;
 @property (strong) NSString *modelName;
@@ -34,17 +35,17 @@
     NSManagedObjectModel *mom = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
     NSAssert(mom, @"NSManagedObjectModel not created correctly!");
 
-    NSPersistentStoreCoordinator *coordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:mom];
-    NSAssert(coordinator, @"NSPersistenStoreCoordinator not created correctly!");
+    self.persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:mom];
+    NSAssert(self.persistentStoreCoordinator, @"NSPersistenStoreCoordinator not created correctly!");
 
     [self setManagedObjectContext:[[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType]];
 
     [self setPrivateContext:[[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType]];
-    [self.privateContext setPersistentStoreCoordinator:coordinator];
+    [self.privateContext setPersistentStoreCoordinator:self.persistentStoreCoordinator];
     [self.managedObjectContext setParentContext:[self privateContext]];
 
+    __weak __typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-        NSPersistentStoreCoordinator *psc = [[self privateContext] persistentStoreCoordinator];
         NSMutableDictionary *options = [NSMutableDictionary dictionary];
         options[NSMigratePersistentStoresAutomaticallyOption] = @YES;
         options[NSInferMappingModelAutomaticallyOption] = @YES;
@@ -54,15 +55,15 @@
         NSURL *storeURL = [documentsURL URLByAppendingPathComponent:[NSString stringWithFormat:@"%@.sqlite", modelName]];
 
         NSError *error = nil;
-        NSPersistentStore *persistentStore = [psc addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error];
+        NSPersistentStore *persistentStore = [weakSelf.persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error];
         NSAssert(persistentStore, @"NSPersistentStoreCoordinator not added correctly!");
 
-        if (![self initCallback]) {
+        if (![weakSelf initCallback]) {
             return;
         }
 
         dispatch_sync(dispatch_get_main_queue(), ^{
-            [self initCallback]();
+            [weakSelf initCallback]();
         });
     });
 }
@@ -75,9 +76,10 @@
 
 - (void)save:(DBBooleanCompletionBlock)callback {
 
+    __weak __typeof(self) weakSelf = self;
     if (![NSThread isMainThread]) {
         dispatch_sync(dispatch_get_main_queue(), ^{
-            [self save:callback];
+            [weakSelf save:callback];
         });
         return;
     }
@@ -91,10 +93,10 @@
 
     [self.managedObjectContext performBlockAndWait:^{
         NSError *error = nil;
-        if ([self.managedObjectContext save:&error]) {
-            [self.privateContext performBlock:^{
+        if ([weakSelf.managedObjectContext save:&error]) {
+            [weakSelf.privateContext performBlock:^{
                 NSError *privateError = nil;
-                if ([self.privateContext save:&privateError]) {
+                if ([weakSelf.privateContext save:&privateError]) {
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if (callback) callback(YES, nil);
                     });
@@ -111,19 +113,30 @@
 }
 
 - (void)cleanDatabase:(DBBooleanCompletionBlock)callback {
-    [self.managedObjectContext performBlockAndWait:^{
-        [self.managedObjectContext reset];
-        NSArray *stores = [self.managedObjectContext.persistentStoreCoordinator persistentStores];
-        for (NSPersistentStore *store in stores) {
-            NSError *error = nil;
-            [self.managedObjectContext.persistentStoreCoordinator removePersistentStore:store error:&error];
+    [self.managedObjectContext reset];
+
+    NSArray *stores = [[self.persistentStoreCoordinator persistentStores] copy];
+    for (NSPersistentStore *store in stores) {
+        NSError *error = nil;
+
+        // iOS9 only method
+        if ([self.persistentStoreCoordinator respondsToSelector:@selector(destroyPersistentStoreAtURL:withType:options:error:)]) {
+            [self.persistentStoreCoordinator destroyPersistentStoreAtURL:store.URL withType:NSSQLiteStoreType options:nil error:&error];
+        } else {
+            [self.persistentStoreCoordinator removePersistentStore:store error:&error];
             [[NSFileManager defaultManager] removeItemAtPath:store.URL.path error:&error];
-            if (callback) callback(error == nil, error);
+            [[NSFileManager defaultManager] removeItemAtPath:[store.URL.path stringByAppendingString:@"-wal"] error:&error];
+            [[NSFileManager defaultManager] removeItemAtPath:[store.URL.path stringByAppendingString:@"-shm"] error:&error];
         }
-        self.managedObjectContext = nil;
-        self.privateContext = nil;
-        [self initWithModelName:self.modelName callback:nil];
-    }];
+
+        if (callback) callback(error == nil, error);
+    }
+
+    self.managedObjectContext = nil;
+    self.privateContext = nil;
+    self.persistentStoreCoordinator = nil;
+
+    [self initWithModelName:self.modelName callback:nil];
 }
 
 @end
